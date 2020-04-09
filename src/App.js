@@ -1,149 +1,123 @@
-import React from 'react';
-import FoodItemList from './FoodItemList';
-import AddFoodItem from './AddFoodItem';
-import './App.css';
-import EditFoodItem from './EditFoodItem';
-class App extends React.Component {
+import React, { Component } from "react";
+import "./App.css";
 
-  constructor() {
-    super();
-    this.state = {
-      id: null,
-      userId: 1,
-      food: '',
-      cost: '',
-      status: false,
-      foodItem: {},
-      foodItems: [],
-      editing: false
-    };
-    
-    this.handleInputChange = this.handleInputChange.bind(this);
-    this.deleteFoodItem = this.deleteFoodItem.bind(this);
-    this.boughtFoodItem = this.boughtFoodItem.bind(this);
-    this.addFoodItem = this.addFoodItem.bind(this);
-    this.editFoodItem = this.editFoodItem.bind(this);
-    this.setEditing = this.setEditing.bind(this);
-    this.updateFoodItem = this.updateFoodItem.bind(this);
-  }
+import FruitList from "./FruitList";
+import AddFruit from "./AddFruit";
+import EditFruit from "./EditFruit";
 
-  handleInputChange(event) {
-    const target = event.target;
-    const value = target.value;
-    const name = target.name;
- 
+class App extends Component {
+  state = {
+    id: null,
+    tempName: "",
+    tempPrice: "",
+    tempFruit: {},
+    fruitList: [
+      { id: 1, fruitName: "Apple", price: 1.99 },
+      { id: 2, fruitName: "Orange", price: 2.99 },
+      { id: 3, fruitName: "Banana", price: 0.79 },
+    ],
+    editFormOpen: false,
+  };
+
+  handleInputChange = (e) => {
     this.setState({
-      [name]:value
-    })
-  }
-
-  addFoodItem(event){
-    event.preventDefault()
-    if (!this.state.food) return;
-    const foodItem = {
-      id: this.state.foodItems.length + 1,
-      food: this.state.food,
-      cost: this.state.cost,
-      userId: this.state.userId,
-      statu: this.state.status
-    };
-
-    console.log(foodItem);
-    this.setState({
-      food: '',
-      cost: '',
-      foodItem: foodItem,
-      foodItems: [...this.state.foodItems, foodItem]
-    })
-    console.log(this.state.foodItems);
-  }
-
-  deleteFoodItem(id) {
-    const foodItems = this.state.foodItems.filter( item => item.id !== id );
-    this.setState({foodItems: foodItems});
-    if(this.state.editing === true) {
-      window.location.reload();
-    }
-  }
-
-  boughtFoodItem(currentFood) {
-    const updatedCurrentFood = Object.assign({}, currentFood, { status: true });
-    const foodItems = this.state.foodItems.map((foodItem, index) => (foodItem.id === currentFood.id ? updatedCurrentFood : foodItem));
-    this.setState({foodItems: foodItems})
-  }
-
-  editFoodItem(foodItem) {
-    this.setEditing(true);
-    this.setState({
-      food:foodItem.food,
-      cost:foodItem.cost,
-      foodItem: foodItem
+      [e.target.name]: e.target.value,
     });
-    console.log(foodItem);
-  }
+  };
 
-  setEditing(value) {
-    if(typeof value !== 'boolean') { throw " This value must either be true or false"}
+  addFruit = (e) => {
+    e.preventDefault();
+
+    const newFruit = {
+      id: this.state.fruitList.length + 1,
+      fruitName: this.state.tempName,
+      price: this.state.tempPrice,
+    };
+
     this.setState({
-      editing: value
-    })
-  }
+      tempName: "",
+      tempPrice: "",
+      tempFruit: {},
+      fruitList: [...this.state.fruitList, newFruit],
+    });
+  };
 
-  updateFoodItem(event) {
-    event.preventDefault();
-    const updatedFood = this.state.food;
-    const updatedCost = this.state.cost;
-    const updatedFoodItem = Object.assign({}, this.state.foodItem, { food: updatedFood, cost: updatedCost })
-    const foodItems = this.state.foodItems.map((foodItem) => (foodItem.id === this.state.foodItem.id ? updatedFoodItem : foodItem));
-    this.setState({ food:'', cost: '', foodItems: foodItems});
-  }
+  deleteFruit = (id) => {
+    const fruitList = this.state.fruitList.filter((item) => item.id !== id);
+    this.setState({ fruitList: fruitList });
+  };
+
+  // invoked from Edit button in Fruit List
+  editFruit = (fruit) => {
+    // console.log(`editFruit: ${fruit.id},${fruit.fruitName},${fruit.price}`);
+    this.setEditForm(true);
+    this.setState({
+      id: fruit.id,
+      tempName: fruit.fruitName,
+      tempPrice: fruit.price,
+      tempFruit: fruit,
+    });
+  };
+
+  setEditForm = (value) => {
+    this.setState({
+      editFormOpen: value,
+    });
+  };
+
+  updateFruit = (e) => {
+    e.preventDefault();
+    // console.log("updateFruit here...");
+    const updatedName = this.state.tempName;
+    const updatedPrice = this.state.tempPrice;
+    const updatedFruit = Object.assign({}, this.state.tempFruit, {
+      fruitName: updatedName,
+      price: updatedPrice,
+    });
+    const newFruitList = this.state.fruitList.map((fruit) =>
+      fruit.id === this.state.id ? updatedFruit : fruit
+    );
+    this.setState({
+      id: null,
+      tempName: "",
+      tempPrice: "",
+      fruitList: newFruitList,
+      editFormOpen: false,
+    });
+  };
 
   render() {
-    const { cost, food, foodItems, editing } = this.state;
-      return (
-        <div className="App">
-          <div className="row App-main">
-            <FoodItemList 
-              foodItems= {foodItems} 
-              deleteFoodItem={this.deleteFoodItem}
-              boughtFoodItem={this.boughtFoodItem}
-              editFoodItem={this.editFoodItem}
-            />
-          </div>
-          <div className="row App-main">
-          { 
-            editing  ? (
-            <EditFoodItem 
-             food={this.state.food}
-             cost={this.state.cost} 
-             handleInputChange={this.handleInputChange}
-             setEditing={this.setEditing}
-             updateFoodItem={this.updateFoodItem}
-            />
-            ) : (
-            <AddFoodItem 
-              food={this.state.food}
-              cost={this.state.cost} 
-              handleInputChange={this.handleInputChange} 
-              addFoodItem={this.addFoodItem}
-            />
-            )
-          }
-          </div>
+    const { fruitList, editFormOpen } = this.state;
+    return (
+      <div>
+        <div className="container-outer">
+          <FruitList
+            fruitList={fruitList}
+            deleteFruit={this.deleteFruit}
+            editFruit={this.editFruit}
+          />
         </div>
-      );
-    }
+        <div>
+          {editFormOpen ? (
+            <EditFruit
+              tempName={this.state.tempName}
+              tempPrice={this.state.tempPrice}
+              handleInputChange={this.handleInputChange}
+              setEditForm={this.setEditForm}
+              updateFruit={this.updateFruit}
+            />
+          ) : (
+            <AddFruit
+              tempName={this.state.tempName}
+              tempPrice={this.state.tempPrice}
+              handleInputChange={this.handleInputChange}
+              addFruit={this.addFruit}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
 }
-
-
-/*function App(data) {
-  return (
-    <div className="App">
-      <header className="App-header">
-        
-      </header>
-    </div>
-  );
-}*/
 
 export default App;
